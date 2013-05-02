@@ -567,7 +567,7 @@ class ForumEntry {
                     FROM forum_entries
                     LEFT JOIN forum_favorites as ou ON (ou.topic_id = forum_entries.topic_id AND ou.user_id = :user_id)
                     WHERE seminar_id = :seminar_id AND lft > :left
-                        AND rgt < :right AND mkdate >= :mkdate
+                        AND rgt < :right AND (mkdate >= :mkdate OR chdate >= :mkdate)
                     ORDER BY mkdate ASC
                     LIMIT $start, ". ForumEntry::POSTINGS_PER_PAGE);
                 
@@ -805,6 +805,29 @@ class ForumEntry {
         return $info;
     }
     
+    /**
+     * Get info if thread is marked as closed
+     * 
+     * @param string $topic_id
+     * 
+     * @return int  0 or 1 (false/true)
+     */
+    
+    static function getClosedInfo($topic_id)
+    {
+        
+        
+            $stmt = DBManager::get()->prepare("SELECT closed
+                FROM forum_entries
+                WHERE topic_id = ?");
+            $stmt->execute(array($topic_id));
+
+            $info = $stmt->fetchColumn();
+        
+
+        return $info;
+    }
+    
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      *   D   A   T   A   -   C   R   E   A   T   I   O   N   *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -827,6 +850,11 @@ class ForumEntry {
     static function insert($data, $parent_id) 
     {
         $constraint = ForumEntry::getConstraints($parent_id);
+        
+        if($data['sticky'] == NULL)
+        {
+        	$data['sticky'] = 0;
+        }
 
         // #TODO: Zusammenfassen in eine Transaktion!!!
         DBManager::get()->exec('UPDATE forum_entries SET lft = lft + 2
@@ -894,6 +922,30 @@ class ForumEntry {
             SET chdate = UNIX_TIMESTAMP(), latest_chdate = UNIX_TIMESTAMP(), sticky = ?
             WHERE topic_id = ?");
         $stmt->execute(array($sticky_value, $topic_id));
+        
+
+        // update "latest_chdate" for easier sorting of actual threads
+        $parent_id = ForumEntry::getParentTopicId($topic_id);
+        DBManager::get()->exec("UPDATE forum_entries SET latest_chdate = UNIX_TIMESTAMP()
+            WHERE topic_id = '" . $parent_id . "'");
+    
+    }
+    /*    
+     * update the passed topic as closed
+     *
+     * @param type $topic_id the id of the topic to update
+     * @param type closed is 1 if thread should be closed
+     *
+     * @return void
+     */
+    static function update_closed($topic_id,$closed_value)
+    {
+        $topic = ForumEntry::getConstraints($topic_id);
+        
+        $stmt = DBManager::get()->prepare("UPDATE forum_entries
+            SET chdate = UNIX_TIMESTAMP(), latest_chdate = UNIX_TIMESTAMP(), closed = ?
+            WHERE topic_id = ?");
+        $stmt->execute(array($closed_value, $topic_id));
         
 
         // update "latest_chdate" for easier sorting of actual threads

@@ -1,3 +1,4 @@
+<? if (empty($list)) return; ?>
 <br>
 <div id="sortable_areas">
 <? foreach ($list as $category_id => $entries) : ?>
@@ -107,7 +108,10 @@
                     <a href="<?= PluginEngine::getLink('coreforum/index/index/'. $jump_to_topic_id .'#'. $jump_to_topic_id) ?>">
                         <span class="areaname"><?= htmlReady($entry['name_raw']) ?></span>
                     </a>
-                    <div class="areacontent"><?= htmlReady(ForumEntry::killEdit($entry['content_raw'])) ?></div>
+                    <div class="areacontent">
+                        <?= htmlReady(ForumEntry::killEdit(substr($entry['content_raw'], 0, 150))) ?>
+                        <? if(strlen($entry['content_raw']) > 150) : ?>...<? endif ?>
+                    </div>
                 </span>
                 
 
@@ -199,7 +203,7 @@
         <td class="areaborder" colspan="5" class="add_area" onClick="STUDIP.Forum.addArea('<?= $category_id ?>'); return false;">
             <a href="<?= PluginEngine::getLink('coreforum/index/index/?add_area=' . $category_id)?>#cat_<?= $category_id ?>"  title="<?= _('Neuen Bereich zu dieser Kategorie hinzufügen.') ?>">
                 <span><?= _('Bereich hinzufügen') ?></span>
-                <?= Assets::img('icons/16/white/plus.png', array('id' => 'tutorAddArea')) ?>
+                <?= Assets::img('icons/16/white/add.png', array('id' => 'tutorAddArea')) ?>
             </a>
         </td>
     </tr>

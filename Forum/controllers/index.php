@@ -19,15 +19,6 @@
 require_once 'app/controllers/studip_controller.php';
 require_once 'lib/classes/AdminModules.class.php';
 require_once 'lib/classes/Config.class.php';
-require_once $this->trails_root .'/models/ForumEntry.php';
-require_once $this->trails_root .'/models/ForumPerm.php';
-require_once $this->trails_root .'/models/ForumHelpers.php';
-require_once $this->trails_root .'/models/ForumCat.php';
-require_once $this->trails_root .'/models/ForumLike.php';
-require_once $this->trails_root .'/models/ForumVisit.php';
-require_once $this->trails_root .'/models/ForumFavorite.php';
-require_once $this->trails_root .'/models/ForumAbo.php';
-require_once $this->trails_root .'/models/ForumBulkMail.php';
 
 /*
 if (!defined('FEEDCREATOR_VERSION')) {
@@ -595,6 +586,68 @@ class IndexController extends StudipController
             $this->redirect(PluginEngine::getLink('coreforum/index/index/' . $topic_id .'#'. $topic_id));
         }
     }
+    
+/*
+     * Update Thread as closed Thread
+     */ 
+    function set_closed_action($topic_id)
+            {
+                   
+                   // $name    = studip_utf8decode(Request::get('name', _('Kein Titel')));
+                   // $content = studip_utf8decode(Request::get('content', _('Keine Beschreibung')));
+        
+                ForumPerm::check('edit_entry', $this->getId(), $topic_id);
+                
+                $closed_value = 1;
+        
+                if (ForumPerm::hasEditPerms($topic_id)) {
+                    ForumEntry::update_closed($topic_id,$closed_value);
+                } else {
+                    $this->flash['messages']['error'] = 'Keine Berechtigung!';
+                    $this->render_template('messages');
+                    return;
+                }
+        
+                if (Request::isXhr()) {
+                    $this->render_text(json_encode(array(
+                        'name'    => studip_utf8encode(htmlReady($name)),
+                        'content' => studip_utf8encode(formatReady($content))
+                    )));
+                } else {
+                    $this->redirect(PluginEngine::getLink('coreforum/index/index/' . $topic_id .'#'. $topic_id));
+                }      
+            }
+
+    /*            
+     * Update Thread as open Thread
+     */ 
+    function unset_closed_action($topic_id)
+            {
+                   
+                   // $name    = studip_utf8decode(Request::get('name', _('Kein Titel')));
+                   // $content = studip_utf8decode(Request::get('content', _('Keine Beschreibung')));
+        
+                ForumPerm::check('edit_entry', $this->getId(), $topic_id);
+                
+                $closed_value = 0;
+        
+                if (ForumPerm::hasEditPerms($topic_id)) {
+                    ForumEntry::update_closed($topic_id,$closed_value);
+                } else {
+                    $this->flash['messages']['error'] = 'Keine Berechtigung!';
+                    $this->render_template('messages');
+                    return;
+                }
+        
+                if (Request::isXhr()) {
+                    $this->render_text(json_encode(array(
+                        'name'    => studip_utf8encode(htmlReady($name)),
+                        'content' => studip_utf8encode(formatReady($content))
+                    )));
+                } else {
+                    $this->redirect(PluginEngine::getLink('coreforum/index/index/' . $topic_id .'#'. $topic_id));
+                }      
+            }
     
 	/*
 	 * Update Thread as sticky Thread

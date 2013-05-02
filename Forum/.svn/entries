@@ -1,14 +1,14 @@
 10
 
 dir
-26303
+26710
 svn://develop.studip.de/studip/trunk/public/plugins_packages/core/Forum
 svn://develop.studip.de/studip
 
 
 
-2013-04-03T11:49:59.437972Z
-26214
+2013-04-30T11:21:19.006255Z
+26697
 tgloeggl
 
 
@@ -75,10 +75,10 @@ file
 
 
 
-2013-04-09T14:25:33.237128Z
-a79b55dd02eaf075325dd0212871ba3f
-2013-04-03T11:49:59.437972Z
-26214
+2013-04-30T09:21:26.708510Z
+a8eab111fc85de0e46f05fb3f0cee085
+2013-04-23T13:03:20.223857Z
+26620
 tgloeggl
 has-props
 
@@ -101,7 +101,7 @@ has-props
 
 
 
-7089
+7280
 
 img
 dir

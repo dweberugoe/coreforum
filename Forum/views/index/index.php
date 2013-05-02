@@ -17,7 +17,7 @@ $infobox_content[] = array(
     'eintrag'   => array(
         array(
             'icon' => 'icons/16/black/info.png',
-            'text' => sprintf(_('Sie befinden sich hier im Forum. Ausfï¿½hrliche Hilfe finden sie in der %sDokumentation%s'),
+            'text' => sprintf(_('Sie befinden sich hier im Forum. Ausführliche Hilfe finden sie in der %sDokumentation%s'),
                 '<a href="'. format_help_url(PageLayout::getHelpKeyword()) .'" target="_blank">', '</a>')
         )
     )
@@ -71,7 +71,7 @@ if (ForumPerm::has('abo', $seminar_id)) {
 if (ForumPerm::has('pdfexport', $seminar_id)) {
     $eintraege[] = array(
         'icon' => 'icons/16/black/link-intern.png',
-        'text' => '<a href="'. PluginEngine::getLink('coreforum/index/pdfexport/' . $constraint['topic_id']) .'">' . _('BeitrÃ¤ge als PDF exportieren') .'</a>'
+        'text' => '<a href="'. PluginEngine::getLink('coreforum/index/pdfexport/' . $constraint['topic_id']) .'">' . _('Beiträge als PDF exportieren') .'</a>'
     );
 }
 
@@ -91,6 +91,26 @@ if (ForumPerm::has('edit_entry', $seminar_id)) {
     $eintraege[] = array(
         'icon' => 'icons/16/black/link-intern.png',
         'text' => '<a href="'. PluginEngine::getLink('coreforum/index/unentry_sticky/' . $constraint['topic_id']) .'">' . _('Thread entpinnen') .'</a>'
+    );
+    }
+}
+
+if (ForumPerm::has('edit_entry', $seminar_id)) {
+    if($constraint['depth'] == 2 && ForumEntry::getClosedInfo($topic_id))
+    {
+    $eintraege[] = array(
+        'icon' => 'icons/16/black/link-intern.png',
+        'text' => '<a href="'. PluginEngine::getLink('coreforum/index/unset_closed/' . $constraint['topic_id']) .'">' . _('Thread öffnen') .'</a>'
+    );
+    }
+}
+
+if (ForumPerm::has('edit_entry', $seminar_id)) {
+    if($constraint['depth'] == 2 && !ForumEntry::getClosedInfo($topic_id))
+    {
+    $eintraege[] = array(
+        'icon' => 'icons/16/black/link-intern.png',
+        'text' => '<a href="'. PluginEngine::getLink('coreforum/index/set_closed/' . $constraint['topic_id']) .'">' . _('Thread schließen') .'</a>'
     );
     }
 }
@@ -136,28 +156,22 @@ endif;
 </div>
 
 <? if ($no_entries) : ?>
-    <?= MessageBox::info(_('In dieser Ansicht befinden sich zur Zeit keine Beitrï¿½ge.')) ?>
+    <?= MessageBox::info(_('In dieser Ansicht befinden sich zur Zeit keine Beiträge.')) ?>
 <? endif ?>
 
-<!-- Bereiche / Themen / Beitrï¿½ge -->
-<? if (!empty($list)) : ?>
-    <!-- Bereiche / Themen darstellen -->
-    <? if ($constraint['depth'] == 0) : ?>
+<!-- Bereiche / Themen darstellen -->
+<? if ($constraint['depth'] == 0) : ?>
     <?= $this->render_partial('index/_areas') ?>
-    <? else : ?>
+<? elseif ($constraint['depth'] == 1) : ?>
     <?= $this->render_partial('index/_threads') ?>
-    <? endif ?>
-<? elseif ($constraint['depth'] == 0 && $section == 'forum') : ?>
-    <?= MessageBox::info(_('Dieses Forum wurde noch nicht eingerichtet. '.
-            'Es gibt bisher keine Bereiche, in denen man ein Thema erstellen kï¿½nnte.')); ?>
 <? endif ?>
 
 <? if (!empty($postings)) : ?>
-    <!-- Beitrï¿½ge fï¿½r das ausgewï¿½hlte Thema darstellen -->
+    <!-- Beiträge für das ausgewählte Thema darstellen -->
     <?= $this->render_partial('index/_postings') ?>
 <? endif ?>
 
-<!-- Seitenwï¿½hler (bei Bedarf) am unteren Rand anzeigen -->
+<!-- Seitenwähler (bei Bedarf) am unteren Rand anzeigen -->
 <? if ($pagechooser) : ?>
 <div style="float: right; padding-right: 10px;" data-type="page_chooser">
     <?= $pagechooser ?>
@@ -179,19 +193,24 @@ endif;
             <? endif ?>
 
             <? if (ForumPerm::has('pdfexport', $seminar_id) && $section == 'index') : ?>
-                <?= Studip\LinkButton::create('Beitrï¿½ge als PDF exportieren', PluginEngine::getLink('coreforum/index/pdfexport')) ?>
+                <?= Studip\LinkButton::create('Beiträge als PDF exportieren', PluginEngine::getLink('coreforum/index/pdfexport')) ?>
             <? endif ?>
         </div>
     </div>
     
 <? else : ?>
     <? if (!$flash['edit_entry'] && ForumPerm::has('add_entry', $seminar_id)) : ?>
+    
     <? $constraint['depth'] == 1 ? $button_face = _('Neues Thema erstellen') : $button_face = _('Antworten') ?>
+    
     <div style="text-align: center">
+       
         <div id="new_entry_button" <?= $this->flash['new_entry_title'] ? 'style="display: none"' : '' ?>>
             <div class="button-group">
+            <? if(!ForumEntry::getClosedInfo($topic_id)) { ?> 
                 <?= Studip\LinkButton::create($button_face, PluginEngine::getLink('coreforum/index/new_entry/' . $topic_id),
                     array('onClick' => 'STUDIP.Forum.answerEntry(); return false;')) ?>
+            <? } ?>
             
                 <? if ($constraint['depth'] > 0 && ForumPerm::has('abo', $seminar_id)) : ?>
                 <span id="abolink">
@@ -200,7 +219,7 @@ endif;
                 <? endif ?>
                 
                 <? if (ForumPerm::has('pdfexport', $seminar_id)) : ?>
-                <?= Studip\LinkButton::create('Beitrï¿½ge als PDF exportieren', PluginEngine::getLink('coreforum/index/pdfexport/' . $topic_id)) ?>
+                <?= Studip\LinkButton::create('Beiträge als PDF exportieren', PluginEngine::getLink('coreforum/index/pdfexport/' . $topic_id)) ?>
                 <? endif ?>
             </div>
         </div>
@@ -215,7 +234,7 @@ endif;
     <? endif ?>
 </div>
 
-<!-- Mail-Notifikationen verschicken (soweit am Ende der Seite wie mï¿½glich!) -->
+<!-- Mail-Notifikationen verschicken (soweit am Ende der Seite wie möglich!) -->
 <? if ($flash['notify']) :
     ForumAbo::notify($flash['notify']);
 endif ?>

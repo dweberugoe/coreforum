@@ -1,4 +1,26 @@
 <br>
+
+<div class="posting">
+    <span class="corners-top"><span></span></span>
+    <div class="postbody">
+        <div class="content"><?= formatReady(ForumEntry::killEdit($constraint['content'])) ?></div>
+    </div>
+    <dl class="postprofile" style="min-height: 20px">
+        <dt>
+            <? if ($constraint['user_id'] != 'nobody' && $constraint['user_id']) : ?>
+            <a href="<?= URLHelper::getLink('about.php?username='. get_username($constraint['user_id'])) ?>">
+                <?= Avatar::getAvatar($constraint['user_id'])->getImageTag(Avatar::SMALL,
+                    array('title' => get_username($constraint['user_id']))) ?>
+                    <?= get_fullname($constraint['user_id']) ?>
+            </a>
+            <? elseif (!$constraint['user_id']) : ?>
+                <?= _('von Stud.IP erstellt') ?>
+            <? endif ?>
+        </dt>
+    </dl>
+    <span class="corners-bottom"><span></span></span>
+</div>
+
 <div id="sortable_areas">
 <? foreach ($list as $category_id => $entries) : ?>
 <table class="forum" data-category-id="<?= $category_id ?>">
@@ -13,7 +35,7 @@
 
         <td class="forum_header" data-type="answers">
             <span class="no-corner"></span>
-            <span class="heading"><?= _(utf8_decode("BeitrÃ¤ge")) ?></span>
+            <span class="heading"><?= _('Beiträge') ?></span>
         </td>
 
         <td class="forum_header" data-type="last_posting">
@@ -27,7 +49,7 @@
     <tbody class="sortable">
     <!-- this row allows dropping on otherwise empty categories -->
     <tr class="sort-disabled">
-        <td class="areaborder" style="height: 5px"colspan="5"> </td>
+        <td class="areaborder" style="height: 5px"colspan="4"> </td>
     </tr>
 
     <? if (!empty($entries)) foreach ($entries as $entry) :
@@ -37,11 +59,6 @@
 
         <td class="areaentry icon">
             <a href="<?= PluginEngine::getLink('coreforum/index/index/'. $jump_to_topic_id .'#'. $jump_to_topic_id) ?>">
-            <? if($entry['sticky'] == 1) : ?>
-            <?= Assets::img('icons/16/red/perle.png', array(
-                        'title' => $text
-                    )) ?>
-            <? else : ?>
             <? if ($entry['chdate'] >= $visitdate && $entry['owner_id'] != $GLOBALS['user']->id): ?>
                 <? $jump_to_topic_id = $entry['topic_id'] ?>
                 <?= Assets::img('icons/16/red/new/forum.png', array(
@@ -60,14 +77,13 @@
                     )) ?>
                 <? endif ?>
              <? endif ?>
-            <? endif ?>
             </a>
         </td>
 
         <td class="areaentry">
             <div style="position: relative;">
-                <a href="<?= PluginEngine::getLink('coreforum/index/index/'. $jump_to_topic_id .'#'. $jump_to_topic_id) ?>">
-                    <span class="areaname"><?= htmlReady($entry['name_raw'] ?: _('Ohne Titel')) ?></span>
+                <a href="<?= PluginEngine::getLink('coreforum/index/index/'. $entry['topic_id'] .'#'. $entry['topic_id']) ?>">
+                    <span class="areaname"><? if($entry['sticky'] == 1) : ?><?= Assets::img('icons/16/red/info.png', array('title' => 'Bitte beachten')) ?><? endif ?><?= htmlReady($entry['name_raw'] ?: _('Ohne Titel')) ?><? if(ForumEntry::getClosedInfo($entry['topic_id'])) {?> <?= Assets::img('icons/16/black/lock-locked.png', array('title' => 'Thread geschlossen')) ?><? } ?></span>
                 </a>
 
                 <span class="action-icons">
@@ -96,11 +112,11 @@
                     
                     <? if (ForumPerm::has('remove_entry', $seminar_id)) : ?>
                     <a href="<?= PluginEngine::getURL('coreforum/index/delete_entry/' . $entry['topic_id']) ?>"
-                        onClick="STUDIP.Forum.showDialog('<?= _('Mï¿½chten Sie dieses Thema wirklich lï¿½schen?') ?>',
+                        onClick="STUDIP.Forum.showDialog('<?= _('Möchten Sie dieses Thema wirklich löschen?') ?>',
                        '<?= PluginEngine::getURL('coreforum/index/delete_entry/' . $entry['topic_id'] .'?approve_delete=1&page='. (ForumHelpers::getPage() + 1)) ?>',
                        'tr[data-area-id=<?= $entry['topic_id'] ?>] td.areaentry'); return false;">
                         <?= Assets::img('icons/16/blue/trash.png', 
-                            array('class' => 'move-thread', 'title' => 'Dieses Thema lï¿½schen')) ?>
+                            array('class' => 'move-thread', 'title' => 'Dieses Thema löschen')) ?>
                     </a>
                     <? endif ?>
                 </span>
@@ -146,7 +162,7 @@
     <tfoot>
         <!-- bottom border -->
         <tr>
-            <td class="areaborder" colspan="5">
+            <td class="areaborder" colspan="4">
                 <span class="corners-bottom"><span></span></span>
             </td>
         </tr>
